@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <string.h>
+#include <vector>
 using namespace std;
 
 int *ArrayScale(int *maxarray, int count,int value){
@@ -14,82 +15,89 @@ int *ArrayScale(int *maxarray, int count,int value){
 	return temparray;
 }
 
-
-
-
 int main(){
 	clock_t tic=clock();
 	
-	int *inputarray;
-	int inputarraylen;
-	FILE *dosya;
-	int temp;
-	if((dosya=fopen("input.txt","r"))==NULL){
-		cout<<"Dosya acilamadi"<<endl;
-		exit(0);
-	}
+	ifstream inputFile("input.txt");
 	
-	else{
-		/// Dosyadaki dizinin buyuklugunu hesapla..
-		int count=0;
-		while(!feof(dosya)){
-			fscanf(dosya,"%d",&temp);
-			count++;
-			if(count==10000){
+	int temp;
+	vector<int> inputArray;
+	if(inputFile.is_open()){
+		while(inputFile >> temp){
+			inputArray.push_back(temp);
+			if(inputArray.size() == 10000){
 				break;
 			}
 		}
-		inputarraylen=count;
-		fclose(dosya);
-	}
-	
-	if((dosya=fopen("input.txt","r"))==NULL){
-		cout<<"Dosya acilamadi"<<endl;
-		exit(0);
+		inputFile.close();
+
+		vector<vector<int>> subArrays;
+		for(int index = 0; index < inputArray.size(); index++){
+			vector<int> tempArray;
+			while(inputArray.at(index) != 0){
+				tempArray.push_back(inputArray.at(index));
+				index++;
+				if(index == inputArray.size()){
+					break;
+				}
+			}
+			if(tempArray.size() > 1)
+			{
+				if(tempArray.size() == 2){
+					subArrays.push_back(tempArray);
+				}
+				else{
+					for(int subArraySize = tempArray.size(); subArraySize > 1; subArraySize--){
+						for(int i = 0; i < tempArray.size() - subArraySize + 1; i++){
+							vector<int> subSubArray;
+							for(int j = i; j < i + subArraySize; j++){
+								subSubArray.push_back(tempArray.at(j));
+							}
+							subArrays.push_back(subSubArray);
+						}
+					}
+				}
+			}
+		}
+
+		int maxMulIndexInSubArray;
+		int maxMul = INT32_MIN;
+
+		for(int index = 0; index < subArrays.size(); index++){
+			int mul = 1;
+			for(int index2 = 0; index2 < subArrays.at(index).size(); index2++){
+				mul *= subArrays.at(index).at(index2);
+			}
+			if(mul > maxMul){
+				maxMul = mul;
+				maxMulIndexInSubArray = index;
+			}
+		}
+
+		vector<int> maxMulSubArray = subArrays.at(maxMulIndexInSubArray);
+		int minValue = INT32_MAX;
+		int maxValue = INT32_MIN;
+
+		for(int index = 0; index <maxMulSubArray.size(); index++){
+			if(maxMulSubArray.at(index) > maxValue){
+				maxValue = maxMulSubArray.at(index);
+			}
+			if(maxMulSubArray.at(index) < minValue){
+				minValue = maxMulSubArray.at(index);
+			}
+		}
+
+		ofstream outputFile("output.txt");
+		outputFile << maxValue - minValue;
+		outputFile.close();
+
 	}
 	else{
-		inputarray=new int[inputarraylen];
-		int count=0;
-		while(!feof(dosya)){
-			fscanf(dosya,"%d",&inputarray[count]);
-			count++;
-			
-		}
-		fclose(dosya);
+		cout<<"File can't open!";
+		exit(0);
 	}
-	
-	
-	int maxmularraylen=1;
-	count=0;
-	///dosyadaki ilk girdiler 0 oldugu surece devam et ilk 0 olmayani al
-	while(inputarray[count]==0){
-		count++;
-	}
-	int *maxmularray=new int[1];
-	// ilk sifir olmayan inputu al...
-	maxmularray[0]=inputarray[count];
-	long long maxcarpim = inputarray[count];
-	long long maxcarpim2 = inputarray[count];
-	int *tempmularray=new int[1];
-	tempmularray[0]=inputarray[count];
-	for(int i=count;i<inputarraylen;i++){
-		maxcarpim2 *= inputarray[i];
-		if(maxcarpim2!=0){
-				maxcarpim=maxcarpim2;
-				count++;
-				int *temparray= new int[count];
-				temparray = ArrayScale(maxmularray,maxmularraylen,inputarray[i]);
-				maxmularray = new int[count];
-				maxmularray = temparray;		
-		}
-		else{
-			continue;
-		}
-	}
-	
-	
 	
 	clock_t toc = clock();
-	printf("Toplam Süre: %f saniye\n", (double)(toc - tic) / CLOCKS_PER_SEC);
+	printf("Total Time: %f second\n", (double)(toc - tic) / CLOCKS_PER_SEC);
 	return 0;
 }
