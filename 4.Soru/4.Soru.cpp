@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <time.h>
 #include "Convoy.h"
 
 using namespace std;
@@ -29,11 +30,14 @@ void splitInputLine(string line, int& carCount, char& color, int& placeX, int& p
 }
 
 int main(){
+    clock_t tic=clock();
+
     ifstream inputFile("./doc/input.txt");
 
     if(inputFile.is_open()){
         string line;
         vector<Convoy> convoys;
+        int allCarCount = 0;
         while(getline(inputFile, line)){
             int carCount;
             char color;
@@ -47,58 +51,49 @@ int main(){
                 placeX += placeXChanger;
             }
             convoys.push_back(Convoy(cars));
+            allCarCount += carCount;
         }
-
-        bool allDirectionIsY;
+        inputFile.close();
+        
+        Convoy* whichOnYDirection = new Convoy();
         do
         {
-            allDirectionIsY = true;
-            
-            for(int convoyIndex = 0; convoyIndex < convoys.size(); convoyIndex++){
-                vector<Car> cars = convoys.at(convoyIndex).getCars();
-                for(int carIndex = 0; carIndex < cars.size(); carIndex++){
-                    char direction = cars.at(carIndex).getDirection();
-                    int placeX = cars.at(carIndex).getPlaceX();
-                    int placeY = cars.at(carIndex).getPlaceY();
-                    if(direction == 'E' || direction == 'W'){
-                        allDirectionIsY = false;
-                        if(placeX + 1 == 0 || placeX - 1 == 0){
-                            for(int i = 0; i < convoys.size(); i++){
-                                for(int j = 0; j < convoys.at(i).getCars().size(); j++){
-                                    if(i == convoyIndex && j == carIndex){
-                                        continue;
-                                    }
-                                    int otherPlaceX = convoys.at(i).getCars().at(j).getPlaceX();
-                                    int otherPlaceY = convoys.at(i).getCars().at(j).getPlaceY();
-                                    char otherDirection = convoys.at(i).getCars().at(j).getDirection();
-                                    if(otherDirection == 'N' && otherPlaceY == placeY && (otherPlaceX == placeX + 1 || otherPlaceX == placeX - 1)){
-                                        
-                                    }
-                                    else{
-                                        cars.at(carIndex).move();
-                                    }
-                                }
-                            }
-                        }
-                        else{
-                            cars.at(carIndex).move();
-                        }
-                    }
-                    else{
-                        cars.at(carIndex).move();
+            vector<int> movableConvoyIndexs;
+            movableConvoyIndexs.clear();
+            for(int i = 0; i < convoys.size(); i++){
+                if(convoys.at(i).getCars().size() > 0){
+                    if(convoys.at(i).checkIsMovable(whichOnYDirection)){
+                        movableConvoyIndexs.push_back(i);
                     }
                 }
             }
-            
-        } while (!allDirectionIsY);
-
-        for(int i = 0; i < convoys.size(); i++){
-            vector<Car> tempCars = convoys.at(i).getCars();
-            cout<<i + 1<<".convoy car size:"<<convoys.at(i).getCars().size()<<endl;
-            for(int j = 0; j < tempCars.size(); j++){
-                cout<<j + 1<<".car"<<endl<<"X: "<<tempCars.at(j).getPlaceX()<<" Y: "<<tempCars.at(j).getPlaceY()<<" Color: "<<tempCars.at(j).getColor()<<endl;
+            for(int i = 0; i < movableConvoyIndexs.size(); i++){
+                convoys.at(movableConvoyIndexs.at(i)).move(whichOnYDirection);
             }
-            cout<<endl;
+            if(whichOnYDirection->getCars().size() != 0){
+                whichOnYDirection->move(whichOnYDirection);
+            }
+        } while (whichOnYDirection->getCars().size() != allCarCount);
+
+        whichOnYDirection->sortCarsByPlaceY();
+        
+        ofstream outputFile("./doc/output.txt");
+        for(int leftIndex = 0; leftIndex < whichOnYDirection->getCars().size(); leftIndex++){
+            char color = whichOnYDirection->getCars().at(leftIndex).getColor();
+            int colorCount = 0;
+            for(int j = leftIndex; j < whichOnYDirection->getCars().size(); j++){
+                if(whichOnYDirection->getCars().at(j).getColor() == color){
+                    colorCount++;
+                    if(j == whichOnYDirection->getCars().size() - 1){
+                        leftIndex = j;
+                    }
+                }
+                else{
+                    leftIndex = j - 1;
+                    break;
+                }
+            }
+            outputFile<< colorCount << " " << color << (leftIndex == whichOnYDirection->getCars().size() - 1 ? "" : " ");
         }
     }
     else{
@@ -106,5 +101,7 @@ int main(){
         exit(0);
     }
 
+    clock_t toc = clock();
+	printf("Total Time: %f second\n", (double)(toc - tic) / CLOCKS_PER_SEC);
     return 0;
 }

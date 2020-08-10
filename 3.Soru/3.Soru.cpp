@@ -18,7 +18,7 @@ int *ArrayScale(int *maxarray, int count,int value){
 int main(){
 	clock_t tic=clock();
 	
-	ifstream inputFile("input.txt");
+	ifstream inputFile("./doc/input.txt");
 	
 	int temp;
 	vector<int> inputArray;
@@ -87,7 +87,7 @@ int main(){
 			}
 		}
 
-		ofstream outputFile("output.txt");
+		ofstream outputFile("./doc/output.txt");
 		outputFile << maxValue - minValue;
 		outputFile.close();
 

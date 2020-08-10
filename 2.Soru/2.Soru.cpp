@@ -75,13 +75,13 @@ string* sortOutputArrayByAlphabet(string* outputArray, int outputArraySize){
 int main(){
 	clock_t tic=clock();
 	
-	ifstream inputFile("input.txt");
+	ifstream inputFile("./doc/input.txt");
 	string inputArray;
 	string* outputArray;
 	int outputArraySize = 0;
 	getline(inputFile, inputArray);
 	inputFile.close();
-	ofstream outputFile("output.txt");
+	ofstream outputFile("./doc/output.txt");
 	for(int indexFromBegin = 0; indexFromBegin < inputArray.length() - 2; indexFromBegin++){
 		for(int indexFromEnd = inputArray.length() - 1; indexFromEnd > indexFromBegin; indexFromEnd--){
 			int leftIndex = indexFromBegin, rightIndex = indexFromEnd;

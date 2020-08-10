@@ -11,7 +11,7 @@ class Car
         char color;
         int placeX;
         int placeY;
-        char direction;
+        bool firstPlacedY;
     public:
         Car(char color, int placeX, int placeY);
         int getPlaceX();
@@ -19,9 +19,8 @@ class Car
         int getPlaceY();
         void setPlaceY(int placeY);
         char getColor();
-        char getDirection();
-        void setDirectionToNorth();
-        void move();
+        void setFirstPlacedY(bool firstPlacedY);
+        bool getFirstPlacedY();
 };
 
 
